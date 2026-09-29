@@ -1,121 +1,112 @@
+// ===============================
+// J.A.R.V.I.S CORE
+// ===============================
+
+const API_KEY = "AQ.Ab8RN6LBQWeSaBhysrhWJ2cEkKsSFz7k0QlzPEWERNPypNi_NA";
+const MODEL = "gemini-3.8-flash";
+
 const chat = document.getElementById("chat");
 const input = document.getElementById("msg");
-const send = document.getElementById("send");
+const sendBtn = document.getElementById("send");
 const voiceBtn = document.getElementById("voiceBtn");
 const voiceStatus = document.getElementById("voiceStatus");
 
 
-// =================================================
-// GEMINI API KEY
-// TESTING ONLY — DON'T PUT A REAL KEY IN PUBLIC GITHUB
-// =================================================
-
-const API_KEY = "AQ.Ab8RN6LBQWeSaBhysrhWJ2cEkKsSFz7k0QlzPEWERNPypNi_NA";
-
-
-// =================================================
+// ===============================
 // SEND MESSAGE
-// =================================================
+// ===============================
 
-send.addEventListener("click", askJarvis);
+sendBtn.addEventListener("click", sendMessage);
 
-input.addEventListener("keydown", function(event) {
-
+input.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
-        askJarvis();
+        sendMessage();
     }
-
 });
 
 
-async function askJarvis() {
+async function sendMessage() {
 
     const message = input.value.trim();
 
     if (!message) return;
 
-    addMessage(message, "user");
+    // Show user message
+    addMessage("YOU", message, "user");
 
     input.value = "";
 
-    const thinking = addMessage(
-        "Thinking...",
-        "ai"
-    );
-
-    send.disabled = true;
+    // Thinking message
+    addMessage("J.A.R.V.I.S", "Thinking...", "ai");
 
     try {
 
-        const url =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key="
-            + encodeURIComponent(API_KEY);
+        const response = await fetch(
+            "https://generativelanguage.googleapis.com/v1beta/models/" +
+            MODEL +
+            ":generateContent",
+            {
+                method: "POST",
 
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-goog-api-key": API_KEY
+                },
 
-        const response = await fetch(url, {
+                body: JSON.stringify({
+                    contents: [
+                        {
+                            parts: [
+                                {
+                                    text:
+                                    `You are J.A.R.V.I.S, a futuristic personal AI assistant.
 
-            method: "POST",
+Address the user respectfully as Boss.
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+Be helpful, intelligent, concise and natural.
 
-            body: JSON.stringify({
-
-                contents: [
-
-                    {
-                        role: "user",
-
-                        parts: [
-
-                            {
-                                text:
-                                "You are J.A.R.V.I.S, a futuristic personal AI assistant. " +
-                                "Address the user as Boss. " +
-                                "Be helpful, concise and natural.\n\n" +
-                                "User: " + message
-                            }
-
-                        ]
-                    }
-
-                ]
-
-            })
-
-        });
+User message:
+${message}`
+                                }
+                            ]
+                        }
+                    ]
+                })
+            }
+        );
 
 
         const data = await response.json();
+
+        console.log("Gemini response:", data);
 
 
         if (!response.ok) {
 
             throw new Error(
-                data.error?.message ||
-                "Gemini API error"
+                data?.error?.message ||
+                "Gemini API request failed"
             );
-
         }
 
 
-        const answer =
-            data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const reply =
+            data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
 
-        if (!answer) {
-
-            throw new Error(
-                "No response received from Gemini."
-            );
-
+        if (!reply) {
+            throw new Error("No response received from Gemini.");
         }
 
 
-        thinking.innerText = answer;
+        // Remove Thinking message
+        removeLastAIMessage();
 
-        speak(answer);
+        // Show AI response
+        addMessage("J.A.R.V.I.S", reply, "ai");
+
+        // Speak response
+        speak(reply);
 
     }
 
@@ -123,170 +114,158 @@ async function askJarvis() {
 
         console.error(error);
 
-        thinking.innerText =
-            "J.A.R.V.I.S ERROR: " +
-            error.message;
+        removeLastAIMessage();
 
+        addMessage(
+            "SYSTEM",
+            "Connection error: " + error.message,
+            "ai"
+        );
     }
-
-    finally {
-
-        send.disabled = false;
-
-        input.focus();
-
-    }
-
 }
 
 
-// =================================================
-// ADD MESSAGE
-// =================================================
+// ===============================
+// CHAT MESSAGE
+// ===============================
 
-function addMessage(text, type) {
+function addMessage(sender, text, type) {
 
-    const div = document.createElement("div");
+    const messageDiv = document.createElement("div");
 
-    div.className =
-        "msg " + type;
+    messageDiv.className = "msg " + type;
 
-    if (type === "ai") {
+    const label = document.createElement("span");
 
-        div.innerHTML =
-            '<span class="label">J.A.R.V.I.S</span>' +
-            escapeHTML(text);
+    label.className = "label";
 
-    } else {
+    label.textContent = sender;
 
-        div.innerText =
-            "YOU: " + text;
+    messageDiv.appendChild(label);
 
+    const textNode = document.createElement("div");
+
+    textNode.textContent = text;
+
+    messageDiv.appendChild(textNode);
+
+    chat.appendChild(messageDiv);
+
+    chat.scrollTop = chat.scrollHeight;
+}
+
+
+// ===============================
+// REMOVE THINKING MESSAGE
+// ===============================
+
+function removeLastAIMessage() {
+
+    const messages = chat.querySelectorAll(".msg");
+
+    if (messages.length === 0) return;
+
+    const last = messages[messages.length - 1];
+
+    if (
+        last.classList.contains("ai") &&
+        last.textContent.includes("Thinking...")
+    ) {
+        last.remove();
     }
-
-    chat.appendChild(div);
-
-    chat.scrollTop =
-        chat.scrollHeight;
-
-    return div;
-
 }
 
 
-// =================================================
-// PROTECT CHAT HTML
-// =================================================
-
-function escapeHTML(text) {
-
-    const div =
-        document.createElement("div");
-
-    div.innerText = text;
-
-    return div.innerHTML;
-
-}
-
-
-// =================================================
+// ===============================
 // VOICE INPUT
-// =================================================
+// ===============================
 
 const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
 
-let recognition;
-
-
 if (SpeechRecognition) {
 
-    recognition =
-        new SpeechRecognition();
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-IN";
 
     recognition.continuous = false;
+
     recognition.interimResults = false;
-    recognition.lang = "en-US";
 
 
-    recognition.onstart = function() {
+    voiceBtn.addEventListener("click", function () {
 
-        voiceBtn.innerText =
-            "🔴 LISTENING...";
+        try {
 
-        voiceStatus.innerText =
-            "LISTENING";
+            recognition.start();
 
-        voiceStatus.className =
-            "green";
+            voiceStatus.textContent = "LISTENING";
 
-    };
+            voiceBtn.textContent = "🎙 LISTENING...";
+
+        }
+
+        catch (error) {
+
+            console.log(error);
+
+        }
+
+    });
 
 
-    recognition.onresult = function(event) {
+    recognition.onresult = function (event) {
 
-        const text =
+        const transcript =
             event.results[0][0].transcript;
 
-        input.value = text;
+        input.value = transcript;
 
-        voiceBtn.innerText =
-            "🎙 START VOICE";
+        voiceStatus.textContent = "READY";
 
-        voiceStatus.innerText =
-            "READY";
+        voiceBtn.textContent = "🎙 START VOICE";
 
-        askJarvis();
-
-    };
-
-
-    recognition.onerror = function(event) {
-
-        voiceBtn.innerText =
-            "🎙 START VOICE";
-
-        voiceStatus.innerText =
-            "VOICE ERROR";
-
-        console.log(event.error);
+        // Automatically send
+        sendMessage();
 
     };
 
 
-    recognition.onend = function() {
+    recognition.onend = function () {
 
-        voiceBtn.innerText =
-            "🎙 START VOICE";
+        voiceStatus.textContent = "READY";
+
+        voiceBtn.textContent = "🎙 START VOICE";
+
+    };
+
+
+    recognition.onerror = function (event) {
+
+        console.error("Voice error:", event.error);
+
+        voiceStatus.textContent = "ERROR";
+
+        voiceBtn.textContent = "🎙 START VOICE";
 
     };
 
 }
+else {
+
+    voiceStatus.textContent = "NOT SUPPORTED";
+
+    voiceBtn.textContent = "🎙 VOICE NOT SUPPORTED";
+
+}
 
 
-voiceBtn.addEventListener("click", function() {
-
-    if (!recognition) {
-
-        alert(
-            "Voice recognition is not supported in this browser."
-        );
-
-        return;
-
-    }
-
-    recognition.start();
-
-});
-
-
-// =================================================
+// ===============================
 // J.A.R.V.I.S VOICE OUTPUT
-// =================================================
+// ===============================
 
 function speak(text) {
 
@@ -294,15 +273,18 @@ function speak(text) {
         return;
     }
 
-    window.speechSynthesis.cancel();
+    speechSynthesis.cancel();
 
     const speech =
         new SpeechSynthesisUtterance(text);
 
+    speech.lang = "en-IN";
+
     speech.rate = 0.95;
-    speech.pitch = 0.8;
+
+    speech.pitch = 0.9;
+
     speech.volume = 1;
 
-    window.speechSynthesis.speak(speech);
-
+    speechSynthesis.speak(speech);
 }
