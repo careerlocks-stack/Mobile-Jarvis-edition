@@ -1,32 +1,55 @@
 // ==========================================
-// J.A.R.V.I.S — MOBILE AI ASSISTANT
+// J.A.R.V.I.S — IRON MAN HUD SYSTEM
 // SECURE GEMINI BACKEND + VOICE
 // ==========================================
 
 const BACKEND_URL =
     "https://mobile-jarvis-edition.vercel.app/api/chat";
 
+
 // ==========================================
 // HTML ELEMENTS
 // ==========================================
 
-const chat = document.getElementById("chat");
-const input = document.getElementById("msg");
-const sendBtn = document.getElementById("send");
-const voiceBtn = document.getElementById("voiceBtn");
-const voiceStatus = document.getElementById("voiceStatus");
+const chat =
+    document.getElementById("chat");
+
+const input =
+    document.getElementById("msg");
+
+const sendBtn =
+    document.getElementById("send");
+
+const voiceBtn =
+    document.getElementById("voiceBtn");
+
+const voiceStatus =
+    document.getElementById("voiceStatus");
+
+const mainStatus =
+    document.getElementById("mainStatus");
+
 
 // ==========================================
-// TEXT MESSAGE EVENTS
+// MESSAGE EVENTS
 // ==========================================
 
-sendBtn.addEventListener("click", sendMessage);
+sendBtn.addEventListener(
+    "click",
+    sendMessage
+);
 
-input.addEventListener("keydown", function (event) {
-    if (event.key === "Enter") {
-        sendMessage();
+input.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+
     }
-});
+);
+
 
 // ==========================================
 // SEND MESSAGE
@@ -34,27 +57,32 @@ input.addEventListener("keydown", function (event) {
 
 async function sendMessage() {
 
-    const message = input.value.trim();
+    const message =
+        input.value.trim();
 
     if (!message) return;
 
-    addMessage("YOU", message, "user");
+
+    addMessage(
+        "BOSS",
+        message,
+        "user"
+    );
 
     input.value = "";
 
-    addMessage(
-        "J.A.R.V.I.S",
-        "Thinking...",
-        "ai"
-    );
 
-    sendBtn.disabled = true;
+    setThinking();
+
 
     try {
 
-        const reply = await callJarvis(message);
+        const reply =
+            await callJarvis(message);
+
 
         removeThinking();
+
 
         addMessage(
             "J.A.R.V.I.S",
@@ -62,16 +90,23 @@ async function sendMessage() {
             "ai"
         );
 
+
+        setSpeaking();
+
         speak(reply);
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
             "J.A.R.V.I.S ERROR:",
             error
         );
 
+
         removeThinking();
+
 
         addMessage(
             "SYSTEM",
@@ -80,50 +115,65 @@ async function sendMessage() {
             "ai"
         );
 
-    } finally {
 
-        sendBtn.disabled = false;
+        setReady();
+
     }
+
 }
 
+
 // ==========================================
-// SECURE BACKEND
+// JARVIS BACKEND
 // ==========================================
 
 async function callJarvis(message) {
 
-    const response = await fetch(
-        BACKEND_URL,
-        {
-            method: "POST",
+    const response =
+        await fetch(
+            BACKEND_URL,
+            {
 
-            headers: {
-                "Content-Type": "application/json"
-            },
+                method: "POST",
 
-            body: JSON.stringify({
-                message: message
-            })
-        }
-    );
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body:
+                    JSON.stringify({
+                        message: message
+                    })
+
+            }
+        );
+
 
     let data;
 
+
     try {
 
-        data = await response.json();
+        data =
+            await response.json();
 
-    } catch {
+    }
+
+    catch {
 
         throw new Error(
             "Invalid response from J.A.R.V.I.S server."
         );
+
     }
+
 
     console.log(
         "J.A.R.V.I.S BACKEND:",
         data
     );
+
 
     if (!response.ok) {
 
@@ -131,17 +181,84 @@ async function callJarvis(message) {
             data?.error ||
             "Backend request failed."
         );
+
     }
+
 
     if (!data.reply) {
 
         throw new Error(
             "J.A.R.V.I.S returned no response."
         );
+
     }
 
+
     return data.reply;
+
 }
+
+
+// ==========================================
+// THINKING STATE
+// ==========================================
+
+function setThinking() {
+
+    mainStatus.textContent =
+        "PROCESSING REQUEST";
+
+    voiceStatus.textContent =
+        "THINKING";
+
+    voiceStatus.className =
+        "yellow";
+
+
+    addMessage(
+        "J.A.R.V.I.S",
+        "Analyzing your request...",
+        "ai thinking-message"
+    );
+
+}
+
+
+// ==========================================
+// SPEAKING STATE
+// ==========================================
+
+function setSpeaking() {
+
+    mainStatus.textContent =
+        "SPEAKING";
+
+    voiceStatus.textContent =
+        "SPEAKING";
+
+    voiceStatus.className =
+        "green";
+
+}
+
+
+// ==========================================
+// READY STATE
+// ==========================================
+
+function setReady() {
+
+    mainStatus.textContent =
+        "SYSTEM READY";
+
+    voiceStatus.textContent =
+        "READY";
+
+    voiceStatus.className =
+        "green";
+
+}
+
 
 // ==========================================
 // ADD CHAT MESSAGE
@@ -156,39 +273,51 @@ function addMessage(
     const messageDiv =
         document.createElement("div");
 
+
     messageDiv.className =
         "msg " + type;
+
 
     const label =
         document.createElement("span");
 
+
     label.className =
         "label";
+
 
     label.textContent =
         sender;
 
+
     const textNode =
         document.createElement("div");
 
+
     textNode.textContent =
         text;
+
 
     messageDiv.appendChild(
         label
     );
 
+
     messageDiv.appendChild(
         textNode
     );
+
 
     chat.appendChild(
         messageDiv
     );
 
+
     chat.scrollTop =
         chat.scrollHeight;
+
 }
+
 
 // ==========================================
 // REMOVE THINKING
@@ -199,25 +328,30 @@ function removeThinking() {
     const messages =
         chat.querySelectorAll(".msg");
 
+
     if (!messages.length) {
         return;
     }
+
 
     const last =
         messages[
             messages.length - 1
         ];
 
+
     if (
-        last.classList.contains("ai") &&
         last.textContent.includes(
-            "Thinking..."
+            "Analyzing your request..."
         )
     ) {
 
         last.remove();
+
     }
+
 }
+
 
 // ==========================================
 // VOICE RECOGNITION
@@ -227,29 +361,37 @@ const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
+
 let recognition = null;
+
 
 if (SpeechRecognition) {
 
     recognition =
         new SpeechRecognition();
 
+
     recognition.lang =
         "en-IN";
+
 
     recognition.continuous =
         false;
 
+
     recognition.interimResults =
         false;
 
+
     recognition.maxAlternatives =
         1;
+
 
     voiceBtn.addEventListener(
         "click",
         startListening
     );
+
 
     function startListening() {
 
@@ -257,20 +399,40 @@ if (SpeechRecognition) {
 
             recognition.start();
 
+
             voiceStatus.textContent =
                 "LISTENING";
+
+
+            mainStatus.textContent =
+                "LISTENING";
+
+
+            voiceStatus.className =
+                "green";
+
 
             voiceBtn.textContent =
                 "🎙 LISTENING...";
 
-        } catch (error) {
+
+            voiceBtn.classList.add(
+                "listening"
+            );
+
+        }
+
+        catch (error) {
 
             console.log(
                 "Voice start:",
                 error
             );
+
         }
+
     }
+
 
     recognition.onresult =
         function (event) {
@@ -280,32 +442,57 @@ if (SpeechRecognition) {
                 .results[0][0]
                 .transcript;
 
+
             console.log(
-                "Boss said:",
+                "BOSS SAID:",
                 transcript
             );
+
 
             input.value =
                 transcript;
 
+
             voiceStatus.textContent =
                 "PROCESSING";
+
+
+            mainStatus.textContent =
+                "PROCESSING";
+
 
             voiceBtn.textContent =
                 "🎙 PROCESSING...";
 
+
             sendMessage();
+
         };
+
 
     recognition.onend =
         function () {
 
-            voiceStatus.textContent =
-                "READY";
+            voiceBtn.classList.remove(
+                "listening"
+            );
+
+
+            if (
+                mainStatus.textContent ===
+                "LISTENING"
+            ) {
+
+                setReady();
+
+            }
+
 
             voiceBtn.textContent =
                 "🎙 START VOICE";
+
         };
+
 
     recognition.onerror =
         function (event) {
@@ -315,68 +502,110 @@ if (SpeechRecognition) {
                 event.error
             );
 
+
             voiceStatus.textContent =
                 "ERROR";
 
+
+            mainStatus.textContent =
+                "VOICE ERROR";
+
+
+            voiceBtn.classList.remove(
+                "listening"
+            );
+
+
             voiceBtn.textContent =
                 "🎙 START VOICE";
+
+
+            setTimeout(
+                setReady,
+                1500
+            );
+
         };
 
-} else {
+}
+
+else {
 
     voiceStatus.textContent =
         "NOT SUPPORTED";
 
+    mainStatus.textContent =
+        "VOICE UNAVAILABLE";
+
     voiceBtn.textContent =
         "🎙 VOICE NOT SUPPORTED";
+
 }
 
+
 // ==========================================
-// J.A.R.V.I.S TEXT TO SPEECH
+// TEXT TO SPEECH
 // ==========================================
 
 let availableVoices = [];
 
+
 function loadVoices() {
 
     if (
-        !("speechSynthesis" in window)
+        !(
+            "speechSynthesis"
+            in window
+        )
     ) {
+
         return;
+
     }
+
 
     availableVoices =
         speechSynthesis.getVoices();
+
 }
+
 
 loadVoices();
 
+
 if (
-    "speechSynthesis" in window
+    "speechSynthesis"
+    in window
 ) {
 
     speechSynthesis.onvoiceschanged =
         loadVoices;
+
 }
 
+
 // ==========================================
-// SPEAK RESPONSE
+// JARVIS SPEAK
 // ==========================================
 
 function speak(text) {
 
     if (
-        !("speechSynthesis" in window)
+        !(
+            "speechSynthesis"
+            in window
+        )
     ) {
 
-        console.log(
-            "Speech synthesis unavailable."
-        );
+        setReady();
 
         return;
+
     }
 
+
     speechSynthesis.cancel();
+
 
     const cleanText =
         text
@@ -385,28 +614,36 @@ function speak(text) {
         .replace(/`/g, "")
         .replace(/\n+/g, " ");
 
+
     const utterance =
         new SpeechSynthesisUtterance(
             cleanText
         );
 
+
     utterance.lang =
         "en-IN";
+
 
     utterance.rate =
         0.92;
 
+
     utterance.pitch =
         0.85;
+
 
     utterance.volume =
         1.0;
 
+
     let selectedVoice =
         availableVoices.find(
             voice =>
-                voice.lang === "en-IN"
+                voice.lang ===
+                "en-IN"
         );
+
 
     if (!selectedVoice) {
 
@@ -417,23 +654,75 @@ function speak(text) {
                     .toLowerCase()
                     .startsWith("en")
             );
+
     }
+
 
     if (selectedVoice) {
 
         utterance.voice =
             selectedVoice;
 
+
         console.log(
             "J.A.R.V.I.S VOICE:",
             selectedVoice.name
         );
+
     }
+
+
+    utterance.onend =
+        function () {
+
+            setReady();
+
+        };
+
+
+    utterance.onerror =
+        function () {
+
+            setReady();
+
+        };
+
 
     speechSynthesis.speak(
         utterance
     );
+
 }
+
+
+// ==========================================
+// QUICK COMMANDS
+// ==========================================
+
+const quickButtons =
+    document.querySelectorAll(
+        ".quick-btn"
+    );
+
+
+quickButtons.forEach(
+    function (button) {
+
+        button.addEventListener(
+            "click",
+            function () {
+
+                input.value =
+                    button.dataset.command;
+
+                sendMessage();
+
+            }
+        );
+
+    }
+);
+
 
 // ==========================================
 // STARTUP
@@ -444,20 +733,23 @@ console.log(
 );
 
 console.log(
-    "J.A.R.V.I.S SYSTEM ONLINE"
+    "J.A.R.V.I.S HUD ONLINE"
 );
 
 console.log(
-    "SECURE BACKEND:",
-    BACKEND_URL
+    "SECURE GEMINI BACKEND ACTIVE"
 );
 
 console.log(
-    "VOICE SYSTEM READY"
+    "VOICE ENGINE ACTIVE"
 );
 
 console.log(
-    "GEMINI API KEY: SERVER SIDE"
+    "ARC REACTOR ONLINE"
+);
+
+console.log(
+    "SYSTEM STATUS: READY"
 );
 
 console.log(
