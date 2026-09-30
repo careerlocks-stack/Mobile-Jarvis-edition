@@ -1,12 +1,10 @@
 // ==========================================
 // J.A.R.V.I.S — MOBILE AI ASSISTANT
+// SECURE GEMINI BACKEND + VOICE
 // ==========================================
 
-// Your Gemini API key
-const API_KEY = " ";
-
-// Current Gemini model
-const MODEL = "gemini-3.8-flash";
+const BACKEND_URL =
+    "https://mobile-jarvis-edition.vercel.app/api/chat";
 
 // ==========================================
 // HTML ELEMENTS
@@ -19,7 +17,7 @@ const voiceBtn = document.getElementById("voiceBtn");
 const voiceStatus = document.getElementById("voiceStatus");
 
 // ==========================================
-// SEND TEXT MESSAGE
+// TEXT MESSAGE EVENTS
 // ==========================================
 
 sendBtn.addEventListener("click", sendMessage);
@@ -30,36 +28,31 @@ input.addEventListener("keydown", function (event) {
     }
 });
 
+// ==========================================
+// SEND MESSAGE
+// ==========================================
+
 async function sendMessage() {
 
     const message = input.value.trim();
 
     if (!message) return;
 
-    if (!API_KEY || API_KEY.includes("PASTE_YOUR")) {
-        addMessage(
-            "SYSTEM",
-            "Gemini API key is not configured.",
-            "ai"
-        );
-        return;
-    }
-
-    // User message
     addMessage("YOU", message, "user");
 
     input.value = "";
 
-    // Thinking message
     addMessage(
         "J.A.R.V.I.S",
         "Thinking...",
         "ai"
     );
 
+    sendBtn.disabled = true;
+
     try {
 
-        const reply = await callGemini(message);
+        const reply = await callJarvis(message);
 
         removeThinking();
 
@@ -69,108 +62,96 @@ async function sendMessage() {
             "ai"
         );
 
-        // Speak response
         speak(reply);
 
     } catch (error) {
 
-        console.error("JARVIS ERROR:", error);
+        console.error(
+            "J.A.R.V.I.S ERROR:",
+            error
+        );
 
         removeThinking();
 
         addMessage(
             "SYSTEM",
-            "Connection error: " + error.message,
+            "Connection error: " +
+            error.message,
             "ai"
         );
+
+    } finally {
+
+        sendBtn.disabled = false;
     }
 }
 
 // ==========================================
-// GEMINI API
+// SECURE BACKEND
 // ==========================================
 
-async function callGemini(message) {
+async function callJarvis(message) {
 
-    const url =
-        "https://generativelanguage.googleapis.com/v1beta/models/" +
-        MODEL +
-        ":generateContent?key=" +
-        encodeURIComponent(API_KEY);
+    const response = await fetch(
+        BACKEND_URL,
+        {
+            method: "POST",
 
-    const prompt = `
-You are J.A.R.V.I.S, a futuristic personal AI assistant.
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-Your personality:
-- Intelligent
-- Calm
-- Helpful
-- Natural
-- Professional
-- Slightly futuristic
+            body: JSON.stringify({
+                message: message
+            })
+        }
+    );
 
-Always address the user as "Boss" when appropriate.
+    let data;
 
-Keep answers concise unless the user asks for detailed information.
+    try {
 
-User message:
-${message}
-`;
+        data = await response.json();
 
-    const response = await fetch(url, {
+    } catch {
 
-        method: "POST",
+        throw new Error(
+            "Invalid response from J.A.R.V.I.S server."
+        );
+    }
 
-        headers: {
-            "Content-Type": "application/json"
-        },
-
-        body: JSON.stringify({
-
-            contents: [
-                {
-                    parts: [
-                        {
-                            text: prompt
-                        }
-                    ]
-                }
-            ]
-
-        })
-
-    });
-
-    const data = await response.json();
-
-    console.log("Gemini response:", data);
+    console.log(
+        "J.A.R.V.I.S BACKEND:",
+        data
+    );
 
     if (!response.ok) {
 
         throw new Error(
-            data?.error?.message ||
-            "Gemini API request failed."
+            data?.error ||
+            "Backend request failed."
         );
     }
 
-    const reply =
-        data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!reply) {
+    if (!data.reply) {
 
         throw new Error(
-            "Gemini returned no response."
+            "J.A.R.V.I.S returned no response."
         );
     }
 
-    return reply;
+    return data.reply;
 }
 
 // ==========================================
-// ADD MESSAGE
+// ADD CHAT MESSAGE
 // ==========================================
 
-function addMessage(sender, text, type) {
+function addMessage(
+    sender,
+    text,
+    type
+) {
 
     const messageDiv =
         document.createElement("div");
@@ -181,27 +162,36 @@ function addMessage(sender, text, type) {
     const label =
         document.createElement("span");
 
-    label.className = "label";
+    label.className =
+        "label";
 
-    label.textContent = sender;
+    label.textContent =
+        sender;
 
     const textNode =
         document.createElement("div");
 
-    textNode.textContent = text;
+    textNode.textContent =
+        text;
 
-    messageDiv.appendChild(label);
+    messageDiv.appendChild(
+        label
+    );
 
-    messageDiv.appendChild(textNode);
+    messageDiv.appendChild(
+        textNode
+    );
 
-    chat.appendChild(messageDiv);
+    chat.appendChild(
+        messageDiv
+    );
 
     chat.scrollTop =
         chat.scrollHeight;
 }
 
 // ==========================================
-// REMOVE THINKING MESSAGE
+// REMOVE THINKING
 // ==========================================
 
 function removeThinking() {
@@ -209,14 +199,20 @@ function removeThinking() {
     const messages =
         chat.querySelectorAll(".msg");
 
-    if (messages.length === 0) return;
+    if (!messages.length) {
+        return;
+    }
 
     const last =
-        messages[messages.length - 1];
+        messages[
+            messages.length - 1
+        ];
 
     if (
         last.classList.contains("ai") &&
-        last.textContent.includes("Thinking...")
+        last.textContent.includes(
+            "Thinking..."
+        )
     ) {
 
         last.remove();
@@ -231,45 +227,66 @@ const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
+let recognition = null;
+
 if (SpeechRecognition) {
 
-    const recognition =
+    recognition =
         new SpeechRecognition();
 
-    recognition.lang = "en-IN";
+    recognition.lang =
+        "en-IN";
 
-    recognition.continuous = false;
+    recognition.continuous =
+        false;
 
-    recognition.interimResults = false;
+    recognition.interimResults =
+        false;
+
+    recognition.maxAlternatives =
+        1;
 
     voiceBtn.addEventListener(
         "click",
-        function () {
-
-            try {
-
-                recognition.start();
-
-                voiceStatus.textContent =
-                    "LISTENING";
-
-                voiceBtn.textContent =
-                    "🎙 LISTENING...";
-
-            } catch (error) {
-
-                console.log(error);
-            }
-        }
+        startListening
     );
+
+    function startListening() {
+
+        try {
+
+            recognition.start();
+
+            voiceStatus.textContent =
+                "LISTENING";
+
+            voiceBtn.textContent =
+                "🎙 LISTENING...";
+
+        } catch (error) {
+
+            console.log(
+                "Voice start:",
+                error
+            );
+        }
+    }
 
     recognition.onresult =
         function (event) {
 
             const transcript =
-                event.results[0][0].transcript;
+                event
+                .results[0][0]
+                .transcript;
 
-            input.value = transcript;
+            console.log(
+                "Boss said:",
+                transcript
+            );
+
+            input.value =
+                transcript;
 
             voiceStatus.textContent =
                 "PROCESSING";
@@ -294,7 +311,7 @@ if (SpeechRecognition) {
         function (event) {
 
             console.error(
-                "Voice error:",
+                "VOICE ERROR:",
                 event.error
             );
 
@@ -315,15 +332,45 @@ if (SpeechRecognition) {
 }
 
 // ==========================================
-// TEXT TO SPEECH
+// J.A.R.V.I.S TEXT TO SPEECH
+// ==========================================
+
+let availableVoices = [];
+
+function loadVoices() {
+
+    if (
+        !("speechSynthesis" in window)
+    ) {
+        return;
+    }
+
+    availableVoices =
+        speechSynthesis.getVoices();
+}
+
+loadVoices();
+
+if (
+    "speechSynthesis" in window
+) {
+
+    speechSynthesis.onvoiceschanged =
+        loadVoices;
+}
+
+// ==========================================
+// SPEAK RESPONSE
 // ==========================================
 
 function speak(text) {
 
-    if (!("speechSynthesis" in window)) {
+    if (
+        !("speechSynthesis" in window)
+    ) {
 
         console.log(
-            "Speech synthesis not supported."
+            "Speech synthesis unavailable."
         );
 
         return;
@@ -331,24 +378,88 @@ function speak(text) {
 
     speechSynthesis.cancel();
 
-    const speech =
-        new SpeechSynthesisUtterance(text);
+    const cleanText =
+        text
+        .replace(/\*/g, "")
+        .replace(/#/g, "")
+        .replace(/`/g, "")
+        .replace(/\n+/g, " ");
 
-    speech.lang = "en-IN";
+    const utterance =
+        new SpeechSynthesisUtterance(
+            cleanText
+        );
 
-    speech.rate = 0.95;
+    utterance.lang =
+        "en-IN";
 
-    speech.pitch = 0.9;
+    utterance.rate =
+        0.92;
 
-    speech.volume = 1;
+    utterance.pitch =
+        0.85;
 
-    speechSynthesis.speak(speech);
+    utterance.volume =
+        1.0;
+
+    let selectedVoice =
+        availableVoices.find(
+            voice =>
+                voice.lang === "en-IN"
+        );
+
+    if (!selectedVoice) {
+
+        selectedVoice =
+            availableVoices.find(
+                voice =>
+                    voice.lang
+                    .toLowerCase()
+                    .startsWith("en")
+            );
+    }
+
+    if (selectedVoice) {
+
+        utterance.voice =
+            selectedVoice;
+
+        console.log(
+            "J.A.R.V.I.S VOICE:",
+            selectedVoice.name
+        );
+    }
+
+    speechSynthesis.speak(
+        utterance
+    );
 }
 
 // ==========================================
-// STARTUP MESSAGE
+// STARTUP
 // ==========================================
 
 console.log(
-    "J.A.R.V.I.S SYSTEM INITIALIZED."
+    "================================"
+);
+
+console.log(
+    "J.A.R.V.I.S SYSTEM ONLINE"
+);
+
+console.log(
+    "SECURE BACKEND:",
+    BACKEND_URL
+);
+
+console.log(
+    "VOICE SYSTEM READY"
+);
+
+console.log(
+    "GEMINI API KEY: SERVER SIDE"
+);
+
+console.log(
+    "================================"
 );
