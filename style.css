@@ -1,296 +1,446 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap');
+/* =========================================
+   J.A.R.V.I.S — IRON MAN HUD
+   ========================================= */
 
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+}
+
+:root {
+    --cyan: #00eaff;
+    --cyan-light: #8fffff;
+    --blue: #008cff;
+    --dark: #02070d;
+    --panel: rgba(0, 20, 30, 0.72);
+    --line: rgba(0, 234, 255, 0.35);
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
 }
 
 body {
-    min-height: 100vh;
     background:
-        radial-gradient(circle at center, #002b33 0%, #000b0e 35%, #000 75%);
-    color: #00ffff;
-    font-family: 'Orbitron', monospace;
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(0, 120, 180, 0.18),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(0, 234, 255, 0.05),
+            transparent 55%
+        ),
+        #010409;
+
+    color: var(--cyan);
+
+    font-family:
+        "Courier New",
+        monospace;
+
     overflow-x: hidden;
 }
 
-body::before {
-    content: "";
+
+/* =========================================
+   SCANLINE EFFECT
+   ========================================= */
+
+.scanline {
     position: fixed;
     inset: 0;
+
     pointer-events: none;
+
+    z-index: 100;
+
     background:
-        linear-gradient(rgba(0,255,255,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,255,255,.025) 1px, transparent 1px);
-    background-size: 35px 35px;
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px,
+            transparent 3px,
+            rgba(0, 234, 255, 0.025) 4px
+        );
+
+    animation: scanMove 8s linear infinite;
 }
+
+@keyframes scanMove {
+
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 0 100px;
+    }
+}
+
+
+/* =========================================
+   APP
+   ========================================= */
 
 .app {
     width: 100%;
-    max-width: 600px;
+    max-width: 900px;
+
+    min-height: 100vh;
+
     margin: auto;
-    padding: 18px;
+
+    padding:
+        18px
+        14px
+        25px;
+
+    position: relative;
 }
+
+
+/* =========================================
+   TOP BAR
+   ========================================= */
 
 .topbar {
+
     display: flex;
+
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(0,255,255,.25);
+
     padding-bottom: 15px;
+
+    border-bottom:
+        1px solid var(--line);
+
+    box-shadow:
+        0 8px 25px
+        rgba(0, 234, 255, 0.05);
 }
 
-.topbar h1 {
-    font-size: 27px;
+.brand-title {
+
+    font-size: 26px;
+
+    font-weight: bold;
+
     letter-spacing: 5px;
+
     text-shadow:
-        0 0 5px #00ffff,
-        0 0 20px #00ffff;
+        0 0 8px var(--cyan),
+        0 0 25px var(--cyan);
 }
 
-.topbar span {
+.brand-sub {
+
+    margin-top: 4px;
+
     font-size: 9px;
-    letter-spacing: 3px;
-    opacity: .6;
+
+    letter-spacing: 2px;
+
+    color:
+        rgba(143, 255, 255, 0.65);
 }
 
 .online {
+
     font-size: 10px;
-    color: #00ff66;
+
+    letter-spacing: 1px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
 }
 
-.online i {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    background: #00ff66;
+.online-dot {
+
+    width: 8px;
+    height: 8px;
+
     border-radius: 50%;
-    box-shadow: 0 0 10px #00ff66;
-    margin-right: 5px;
+
+    background: #00ff88;
+
+    box-shadow:
+        0 0 7px #00ff88,
+        0 0 18px #00ff88;
+
+    animation: blink 1.4s infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.3;
+    }
 }
 
 
-/* CORE */
+/* =========================================
+   CORE SECTION
+   ========================================= */
 
 .core-section {
+
     text-align: center;
-    padding: 28px 0 20px;
+
+    padding:
+        35px
+        0
+        25px;
 }
+
+
+/* =========================================
+   ARC REACTOR
+   ========================================= */
 
 .core {
-    width: 190px;
-    height: 190px;
-    position: relative;
+
+    width: 245px;
+    height: 245px;
+
     margin: auto;
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    filter:
+        drop-shadow(
+            0 0 20px
+            rgba(0, 234, 255, 0.35)
+        );
 }
 
-.ring {
+
+/* OUTER RINGS */
+
+.outer-ring {
+
     position: absolute;
+
     border-radius: 50%;
-    border: 2px solid #00ffff;
-    box-shadow:
-        0 0 12px #00ffff,
-        inset 0 0 12px rgba(0,255,255,.4);
+
+    border:
+        1px solid
+        rgba(0, 234, 255, 0.5);
 }
+
+
+/* Ring 1 */
 
 .ring-one {
-    inset: 0;
-    border-top-color: transparent;
-    animation: rotate 4s linear infinite;
+
+    width: 240px;
+    height: 240px;
+
+    border-style: dashed;
+
+    animation:
+        rotateClockwise
+        14s
+        linear
+        infinite;
 }
+
+
+/* Ring 2 */
 
 .ring-two {
-    inset: 18px;
-    border-right-color: transparent;
-    animation: rotateReverse 3s linear infinite;
+
+    width: 205px;
+    height: 205px;
+
+    border-color:
+        rgba(0, 234, 255, 0.35);
+
+    animation:
+        rotateReverse
+        10s
+        linear
+        infinite;
 }
+
+
+/* Ring 3 */
 
 .ring-three {
-    inset: 38px;
-    border-left-color: transparent;
-    animation: rotate 2s linear infinite;
+
+    width: 170px;
+    height: 170px;
+
+    border:
+        2px dotted
+        rgba(0, 234, 255, 0.6);
+
+    animation:
+        rotateClockwise
+        8s
+        linear
+        infinite;
 }
 
-.core-energy {
-    position: absolute;
-    inset: 65px;
-    border-radius: 50%;
-    background: #00ffff;
+
+/* Ring 4 */
+
+.ring-four {
+
+    width: 140px;
+    height: 140px;
+
+    border:
+        1px solid
+        rgba(0, 234, 255, 0.8);
+
     box-shadow:
-        0 0 20px #00ffff,
-        0 0 50px #00ffff,
-        0 0 80px rgba(0,255,255,.8);
-    animation: pulse 1.5s ease-in-out infinite;
+        inset 0 0 15px
+        rgba(0, 234, 255, 0.3);
+
+    animation:
+        pulseRing
+        2s
+        ease-in-out
+        infinite;
+}
+
+
+/* =========================================
+   TICK RING
+   ========================================= */
+
+.tick-ring {
+
+    position: absolute;
+
+    width: 220px;
+    height: 220px;
+
+    border-radius: 50%;
+
+    background:
+        repeating-conic-gradient(
+            from 0deg,
+            rgba(0, 234, 255, 0.8)
+            0deg 1deg,
+            transparent 1deg 10deg
+        );
+
+    mask:
+        radial-gradient(
+            transparent 68%,
+            black 69%,
+            black 71%,
+            transparent 72%
+        );
+
+    animation:
+        rotateReverse
+        20s
+        linear
+        infinite;
+}
+
+
+/* =========================================
+   CORE ENERGY
+   ========================================= */
+
+.core-energy {
+
+    width: 90px;
+    height: 90px;
+
+    border-radius: 50%;
+
+    position: relative;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    background:
+        radial-gradient(
+            circle,
+            white 0%,
+            #7fffff 15%,
+            #00d9ff 35%,
+            rgba(0, 160, 255, 0.45) 55%,
+            transparent 72%
+        );
+
+    box-shadow:
+        0 0 15px #00eaff,
+        0 0 35px #00eaff,
+        0 0 70px
+        rgba(0, 234, 255, 0.7);
+
+    animation:
+        reactorPulse
+        1.8s
+        ease-in-out
+        infinite;
 }
 
 .core-dot {
-    position: absolute;
-    inset: 15px;
+
+    width: 22px;
+    height: 22px;
+
     border-radius: 50%;
+
     background: white;
-    box-shadow: 0 0 20px white;
+
+    box-shadow:
+        0 0 15px white,
+        0 0 30px #00eaff,
+        0 0 50px #00eaff;
 }
 
-.core-section h2 {
-    margin-top: 15px;
-    letter-spacing: 5px;
-    font-size: 17px;
-}
+.core-glow {
 
-.core-status {
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: #00ff66;
-    margin-top: 7px;
-}
+    position: absolute;
 
+    inset: -15px;
 
-/* PANELS */
+    border-radius: 50%;
 
-.panel,
-.chat-panel {
-    border: 1px solid rgba(0,255,255,.35);
-    background: rgba(0,255,255,.035);
-    box-shadow: 0 0 20px rgba(0,255,255,.05);
-    margin-top: 15px;
-}
+    border:
+        1px solid
+        rgba(143, 255, 255, 0.7);
 
-.panel-title,
-.chat-header {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px;
-    border-bottom: 1px solid rgba(0,255,255,.2);
-    font-size: 10px;
-    letter-spacing: 2px;
-}
-
-.status-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 12px;
-    font-size: 10px;
-    border-bottom: 1px solid rgba(0,255,255,.08);
-}
-
-.status-row:last-child {
-    border-bottom: none;
-}
-
-.green {
-    color: #00ff66;
-}
-
-.yellow {
-    color: #ffff00;
+    animation:
+        glowPulse
+        1.5s
+        infinite;
 }
 
 
-/* CHAT */
+/* =========================================
+   ANIMATIONS
+   ========================================= */
 
-.chat {
-    height: 230px;
-    overflow-y: auto;
-    padding: 12px;
-}
+@keyframes rotateClockwise {
 
-.msg {
-    padding: 10px;
-    margin-bottom: 9px;
-    border-left: 2px solid #00ffff;
-    background: rgba(0,255,255,.06);
-    font-size: 11px;
-    line-height: 1.7;
-}
-
-.msg.user {
-    border-left-color: white;
-    color: white;
-}
-
-.msg.ai {
-    border-left-color: #00ffff;
-}
-
-.label {
-    display: block;
-    color: #00ffff;
-    font-size: 9px;
-    margin-bottom: 4px;
-    letter-spacing: 1px;
-}
-
-
-/* INPUT */
-
-.input-area {
-    display: flex;
-    gap: 8px;
-    margin-top: 14px;
-}
-
-input {
-    flex: 1;
-    min-width: 0;
-    background: rgba(0,0,0,.7);
-    border: 1px solid #00ffff;
-    color: #00ffff;
-    padding: 13px;
-    outline: none;
-    font-family: inherit;
-}
-
-input:focus {
-    box-shadow: 0 0 12px rgba(0,255,255,.3);
-}
-
-button {
-    border: none;
-    background: #00ffff;
-    color: #000;
-    padding: 0 18px;
-    font-family: inherit;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-button:hover {
-    box-shadow: 0 0 18px #00ffff;
-}
-
-button:disabled {
-    opacity: .4;
-    cursor: not-allowed;
-}
-
-
-/* VOICE */
-
-.voice-button {
-    width: 100%;
-    margin-top: 10px;
-    height: 45px;
-    background: transparent;
-    color: #00ffff;
-    border: 1px solid #00ffff;
-}
-
-
-/* FOOTER */
-
-footer {
-    text-align: center;
-    margin-top: 25px;
-    font-size: 7px;
-    letter-spacing: 2px;
-    opacity: .4;
-}
-
-
-/* ANIMATIONS */
-
-@keyframes rotate {
     from {
         transform: rotate(0deg);
     }
@@ -301,6 +451,7 @@ footer {
 }
 
 @keyframes rotateReverse {
+
     from {
         transform: rotate(360deg);
     }
@@ -310,44 +461,686 @@ footer {
     }
 }
 
-@keyframes pulse {
+@keyframes reactorPulse {
 
     0%,
     100% {
-        transform: scale(.9);
-        opacity: .8;
+        transform: scale(0.94);
     }
 
     50% {
-        transform: scale(1.1);
+        transform: scale(1.08);
+    }
+}
+
+@keyframes glowPulse {
+
+    0%,
+    100% {
+        opacity: 0.25;
+        transform: scale(0.85);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.15);
+    }
+}
+
+@keyframes pulseRing {
+
+    0%,
+    100% {
+        opacity: 0.4;
+        transform: scale(0.96);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.04);
+    }
+}
+
+
+/* =========================================
+   JARVIS NAME
+   ========================================= */
+
+.jarvis-name {
+
+    margin-top: 20px;
+
+    font-size: 24px;
+
+    letter-spacing: 8px;
+
+    font-weight: bold;
+
+    text-shadow:
+        0 0 8px var(--cyan),
+        0 0 25px var(--cyan);
+}
+
+.core-status {
+
+    margin-top: 7px;
+
+    font-size: 11px;
+
+    letter-spacing: 3px;
+
+    color:
+        var(--cyan-light);
+
+    transition:
+        0.3s ease;
+}
+
+
+/* =========================================
+   VOICE WAVE
+   ========================================= */
+
+.wave {
+
+    height: 28px;
+
+    margin:
+        15px
+        auto
+        0;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 4px;
+}
+
+.wave span {
+
+    width: 3px;
+
+    height: 8px;
+
+    background:
+        var(--cyan);
+
+    box-shadow:
+        0 0 8px var(--cyan);
+
+    animation:
+        waveAnimation
+        1s
+        ease-in-out
+        infinite;
+}
+
+.wave span:nth-child(2) {
+    animation-delay: .1s;
+}
+
+.wave span:nth-child(3) {
+    animation-delay: .2s;
+}
+
+.wave span:nth-child(4) {
+    animation-delay: .3s;
+}
+
+.wave span:nth-child(5) {
+    animation-delay: .4s;
+}
+
+.wave span:nth-child(6) {
+    animation-delay: .3s;
+}
+
+.wave span:nth-child(7) {
+    animation-delay: .2s;
+}
+
+.wave span:nth-child(8) {
+    animation-delay: .1s;
+}
+
+@keyframes waveAnimation {
+
+    0%,
+    100% {
+        height: 6px;
+    }
+
+    50% {
+        height: 25px;
+    }
+}
+
+
+/* =========================================
+   PANELS
+   ========================================= */
+
+.panel,
+.chat-panel {
+
+    border:
+        1px solid
+        var(--line);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(0, 30, 45, 0.75),
+            rgba(0, 8, 15, 0.75)
+        );
+
+    box-shadow:
+        inset 0 0 30px
+        rgba(0, 234, 255, 0.035),
+        0 0 15px
+        rgba(0, 234, 255, 0.04);
+
+    backdrop-filter:
+        blur(10px);
+}
+
+
+/* =========================================
+   STATUS
+   ========================================= */
+
+.panel {
+
+    padding: 15px;
+
+    margin-bottom: 15px;
+}
+
+.panel-title {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+    padding-bottom: 12px;
+
+    border-bottom:
+        1px solid
+        rgba(0, 234, 255, 0.18);
+}
+
+.panel-live {
+
+    color: #00ff88;
+}
+
+.status-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 11px 2px;
+
+    border-bottom:
+        1px solid
+        rgba(0, 234, 255, 0.08);
+
+    font-size: 11px;
+}
+
+.status-row b {
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.green {
+    color: #00ff88;
+
+    text-shadow:
+        0 0 8px
+        rgba(0, 255, 136, 0.7);
+}
+
+.yellow {
+    color: #ffe600;
+
+    text-shadow:
+        0 0 8px
+        rgba(255, 230, 0, 0.6);
+}
+
+
+/* =========================================
+   CHAT
+   ========================================= */
+
+.chat-panel {
+
+    overflow: hidden;
+
+    margin-bottom: 12px;
+}
+
+.chat-header {
+
+    padding: 12px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+
+    border-bottom:
+        1px solid
+        var(--line);
+}
+
+.chat {
+
+    height: 250px;
+
+    overflow-y: auto;
+
+    padding: 12px;
+}
+
+.chat::-webkit-scrollbar {
+    width: 3px;
+}
+
+.chat::-webkit-scrollbar-thumb {
+    background: var(--cyan);
+}
+
+
+/* =========================================
+   MESSAGES
+   ========================================= */
+
+.msg {
+
+    margin-bottom: 13px;
+
+    padding: 11px;
+
+    line-height: 1.55;
+
+    font-size: 12px;
+
+    border-left:
+        2px solid
+        var(--cyan);
+
+    background:
+        rgba(0, 234, 255, 0.035);
+
+    animation:
+        messageIn
+        0.35s
+        ease;
+}
+
+.msg.user {
+
+    border-left:
+        2px solid
+        #00ff88;
+
+    background:
+        rgba(0, 255, 136, 0.035);
+}
+
+.label {
+
+    display: block;
+
+    font-size: 9px;
+
+    letter-spacing: 2px;
+
+    margin-bottom: 5px;
+
+    color:
+        var(--cyan-light);
+}
+
+.msg.user .label {
+    color: #00ff88;
+}
+
+@keyframes messageIn {
+
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* =========================================
+   INPUT
+   ========================================= */
+
+.input-area {
+
+    display: flex;
+
+    gap: 8px;
+}
+
+input {
+
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 14px;
+
+    border:
+        1px solid
+        var(--line);
+
+    outline: none;
+
+    color: var(--cyan);
+
+    background:
+        rgba(0, 15, 25, 0.85);
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: 12px;
+}
+
+input::placeholder {
+    color:
+        rgba(143, 255, 255, 0.4);
+}
+
+input:focus {
+
+    border-color:
+        var(--cyan);
+
+    box-shadow:
+        0 0 15px
+        rgba(0, 234, 255, 0.15);
+}
+
+button {
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    cursor: pointer;
+}
+
+#send {
+
+    padding:
+        0 18px;
+
+    border:
+        1px solid
+        var(--cyan);
+
+    background:
+        rgba(0, 234, 255, 0.08);
+
+    color:
+        var(--cyan);
+
+    letter-spacing: 1px;
+
+    transition:
+        0.2s;
+}
+
+#send:hover {
+
+    background:
+        var(--cyan);
+
+    color:
+        #001018;
+
+    box-shadow:
+        0 0 20px
+        var(--cyan);
+}
+
+
+/* =========================================
+   VOICE BUTTON
+   ========================================= */
+
+.voice-button {
+
+    width: 100%;
+
+    margin-top: 10px;
+
+    padding: 15px;
+
+    border:
+        1px solid
+        var(--cyan);
+
+    color:
+        var(--cyan);
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(0, 234, 255, 0.04),
+            rgba(0, 234, 255, 0.12),
+            rgba(0, 234, 255, 0.04)
+        );
+
+    letter-spacing: 2px;
+
+    font-size: 11px;
+
+    transition:
+        0.25s;
+}
+
+.voice-button:hover {
+
+    background:
+        rgba(0, 234, 255, 0.2);
+
+    box-shadow:
+        0 0 20px
+        rgba(0, 234, 255, 0.3);
+}
+
+.voice-button.listening {
+
+    color: white;
+
+    background:
+        rgba(0, 234, 255, 0.3);
+
+    box-shadow:
+        0 0 30px
+        rgba(0, 234, 255, 0.5);
+
+    animation:
+        listeningPulse
+        1s
+        infinite;
+}
+
+@keyframes listeningPulse {
+
+    0%,
+    100% {
+        opacity: 0.7;
+    }
+
+    50% {
         opacity: 1;
     }
 }
 
 
-/* MOBILE */
+/* =========================================
+   QUICK COMMANDS
+   ========================================= */
 
-@media (max-width: 420px) {
+.quick-panel {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 7px;
+
+    margin-top: 10px;
+}
+
+.quick-btn {
+
+    padding: 10px 5px;
+
+    background:
+        rgba(0, 234, 255, 0.035);
+
+    border:
+        1px solid
+        rgba(0, 234, 255, 0.25);
+
+    color:
+        rgba(143, 255, 255, 0.8);
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+}
+
+.quick-btn:hover {
+
+    background:
+        rgba(0, 234, 255, 0.14);
+
+    border-color:
+        var(--cyan);
+}
+
+
+/* =========================================
+   FOOTER
+   ========================================= */
+
+footer {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    margin-top: 22px;
+
+    font-size: 8px;
+
+    letter-spacing: 1px;
+
+    color:
+        rgba(143, 255, 255, 0.4);
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
 
     .app {
-        padding: 12px;
+        padding:
+            14px 10px 20px;
     }
 
-    .topbar h1 {
+    .brand-title {
         font-size: 21px;
+        letter-spacing: 4px;
+    }
+
+    .brand-sub {
+        font-size: 7px;
+    }
+
+    .online {
+        font-size: 8px;
     }
 
     .core {
-        width: 165px;
-        height: 165px;
+        width: 210px;
+        height: 210px;
+    }
+
+    .ring-one {
+        width: 205px;
+        height: 205px;
+    }
+
+    .ring-two {
+        width: 175px;
+        height: 175px;
+    }
+
+    .ring-three {
+        width: 145px;
+        height: 145px;
+    }
+
+    .ring-four {
+        width: 120px;
+        height: 120px;
+    }
+
+    .tick-ring {
+        width: 188px;
+        height: 188px;
     }
 
     .core-energy {
-        inset: 57px;
+        width: 78px;
+        height: 78px;
+    }
+
+    .jarvis-name {
+        font-size: 21px;
     }
 
     .chat {
-        height: 200px;
+        height: 230px;
     }
 
+    .quick-panel {
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
 }
