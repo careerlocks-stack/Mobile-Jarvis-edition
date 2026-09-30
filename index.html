@@ -11,52 +11,78 @@
 
 <body>
 
+<div class="scanline"></div>
+
 <div class="app">
 
+    <!-- TOP HUD -->
     <header class="topbar">
-        <div>
-            <h1>J.A.R.V.I.S</h1>
-            <span>MOBILE AI ASSISTANT</span>
+
+        <div class="brand">
+            <div class="brand-title">J.A.R.V.I.S</div>
+            <div class="brand-sub">PERSONAL ARTIFICIAL INTELLIGENCE</div>
         </div>
 
         <div class="online">
-            <i></i>
-            ONLINE
+            <span class="online-dot"></span>
+            SYSTEM ONLINE
         </div>
+
     </header>
 
 
     <main>
 
-        <!-- ARC CORE -->
-
+        <!-- ARC REACTOR -->
         <section class="core-section">
 
             <div class="core">
 
-                <div class="ring ring-one"></div>
-                <div class="ring ring-two"></div>
-                <div class="ring ring-three"></div>
+                <div class="outer-ring ring-one"></div>
+                <div class="outer-ring ring-two"></div>
+                <div class="outer-ring ring-three"></div>
+                <div class="outer-ring ring-four"></div>
+
+                <div class="tick-ring"></div>
 
                 <div class="core-energy">
                     <div class="core-dot"></div>
+                    <div class="core-glow"></div>
                 </div>
 
             </div>
 
-            <h2>J.A.R.V.I.S</h2>
-            <p class="core-status">AI CORE ACTIVE</p>
+            <div class="jarvis-name">
+                J.A.R.V.I.S
+            </div>
+
+            <div id="mainStatus" class="core-status">
+                SYSTEM READY
+            </div>
+
+            <div id="wave" class="wave">
+
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+
+            </div>
 
         </section>
 
 
-        <!-- SYSTEM STATUS -->
-
+        <!-- STATUS PANEL -->
         <section class="panel">
 
             <div class="panel-title">
-                <span>SYSTEM STATUS</span>
-                <span>●</span>
+                <span>SYSTEM DIAGNOSTICS</span>
+                <span class="panel-live">● LIVE</span>
             </div>
 
             <div class="status-row">
@@ -70,8 +96,8 @@
             </div>
 
             <div class="status-row">
-                <span>VOICE</span>
-                <b id="voiceStatus">READY</b>
+                <span>VOICE ENGINE</span>
+                <b id="voiceStatus" class="green">READY</b>
             </div>
 
             <div class="status-row">
@@ -82,21 +108,31 @@
         </section>
 
 
-        <!-- CHAT -->
-
+        <!-- COMMUNICATION -->
         <section class="chat-panel">
 
             <div class="chat-header">
-                <span>J.A.R.V.I.S COMMUNICATION</span>
-                <span>SECURE</span>
+
+                <span>
+                    J.A.R.V.I.S COMMUNICATION
+                </span>
+
+                <span>
+                    SECURE CHANNEL
+                </span>
+
             </div>
 
             <div id="chat" class="chat">
 
                 <div class="msg ai">
-                    <span class="label">J.A.R.V.I.S</span>
-                    Good evening, Boss. Systems are online.
-                    How may I assist you?
+
+                    <span class="label">
+                        J.A.R.V.I.S
+                    </span>
+
+                    Good evening, Boss. All systems are online and operational. How may I assist you today?
+
                 </div>
 
             </div>
@@ -105,13 +141,12 @@
 
 
         <!-- INPUT -->
-
         <section class="input-area">
 
             <input
                 id="msg"
                 type="text"
-                placeholder="Ask J.A.R.V.I.S..."
+                placeholder="Speak or type your command..."
                 autocomplete="off"
             >
 
@@ -123,16 +158,43 @@
 
 
         <!-- VOICE -->
-
         <button id="voiceBtn" class="voice-button">
             🎙 START VOICE
         </button>
+
+
+        <!-- QUICK COMMANDS -->
+        <section class="quick-panel">
+
+            <button class="quick-btn" data-command="Hello JARVIS">
+                SYSTEM
+            </button>
+
+            <button class="quick-btn" data-command="What can you do?">
+                CAPABILITIES
+            </button>
+
+            <button class="quick-btn" data-command="Tell me the system status">
+                STATUS
+            </button>
+
+        </section>
 
     </main>
 
 
     <footer>
-        J.A.R.V.I.S AI SYSTEM • MOBILE EDITION
+
+        <span>J.A.R.V.I.S AI SYSTEM</span>
+
+        <span>•</span>
+
+        <span>MOBILE EDITION</span>
+
+        <span>•</span>
+
+        <span>SECURE</span>
+
     </footer>
 
 </div>
