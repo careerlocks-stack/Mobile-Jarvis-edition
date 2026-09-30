@@ -1,9 +1,16 @@
-// ===============================
-// J.A.R.V.I.S CORE
-// ===============================
+// ==========================================
+// J.A.R.V.I.S — MOBILE AI ASSISTANT
+// ==========================================
 
-const API_KEY = "AQ.Ab8RN6LBQWeSaBhysrhWJ2cEkKsSFz7k0QlzPEWERNPypNi_NA";
+// Your Gemini API key
+const API_KEY = "AQ.Ab8RN6KqfKQK9U7ECqF1bb4JilTL6pCIr_H7soQEUsSeWtGQ2A";
+
+// Current Gemini model
 const MODEL = "gemini-3.8-flash";
+
+// ==========================================
+// HTML ELEMENTS
+// ==========================================
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("msg");
@@ -11,10 +18,9 @@ const sendBtn = document.getElementById("send");
 const voiceBtn = document.getElementById("voiceBtn");
 const voiceStatus = document.getElementById("voiceStatus");
 
-
-// ===============================
-// SEND MESSAGE
-// ===============================
+// ==========================================
+// SEND TEXT MESSAGE
+// ==========================================
 
 sendBtn.addEventListener("click", sendMessage);
 
@@ -24,97 +30,53 @@ input.addEventListener("keydown", function (event) {
     }
 });
 
-
 async function sendMessage() {
 
     const message = input.value.trim();
 
     if (!message) return;
 
-    // Show user message
+    if (!API_KEY || API_KEY.includes("PASTE_YOUR")) {
+        addMessage(
+            "SYSTEM",
+            "Gemini API key is not configured.",
+            "ai"
+        );
+        return;
+    }
+
+    // User message
     addMessage("YOU", message, "user");
 
     input.value = "";
 
     // Thinking message
-    addMessage("J.A.R.V.I.S", "Thinking...", "ai");
+    addMessage(
+        "J.A.R.V.I.S",
+        "Thinking...",
+        "ai"
+    );
 
     try {
 
-        const response = await fetch(
-            "https://generativelanguage.googleapis.com/v1beta/models/" +
-            MODEL +
-            ":generateContent",
-            {
-                method: "POST",
+        const reply = await callGemini(message);
 
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-goog-api-key": API_KEY
-                },
+        removeThinking();
 
-                body: JSON.stringify({
-                    contents: [
-                        {
-                            parts: [
-                                {
-                                    text:
-                                    `You are J.A.R.V.I.S, a futuristic personal AI assistant.
-
-Address the user respectfully as Boss.
-
-Be helpful, intelligent, concise and natural.
-
-User message:
-${message}`
-                                }
-                            ]
-                        }
-                    ]
-                })
-            }
+        addMessage(
+            "J.A.R.V.I.S",
+            reply,
+            "ai"
         );
-
-
-        const data = await response.json();
-
-        console.log("Gemini response:", data);
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                data?.error?.message ||
-                "Gemini API request failed"
-            );
-        }
-
-
-        const reply =
-            data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-
-        if (!reply) {
-            throw new Error("No response received from Gemini.");
-        }
-
-
-        // Remove Thinking message
-        removeLastAIMessage();
-
-        // Show AI response
-        addMessage("J.A.R.V.I.S", reply, "ai");
 
         // Speak response
         speak(reply);
 
-    }
+    } catch (error) {
 
-    catch (error) {
+        console.error("JARVIS ERROR:", error);
 
-        console.error(error);
-
-        removeLastAIMessage();
+        removeThinking();
 
         addMessage(
             "SYSTEM",
@@ -124,70 +86,155 @@ ${message}`
     }
 }
 
+// ==========================================
+// GEMINI API
+// ==========================================
 
-// ===============================
-// CHAT MESSAGE
-// ===============================
+async function callGemini(message) {
+
+    const url =
+        "https://generativelanguage.googleapis.com/v1beta/models/" +
+        MODEL +
+        ":generateContent?key=" +
+        encodeURIComponent(API_KEY);
+
+    const prompt = `
+You are J.A.R.V.I.S, a futuristic personal AI assistant.
+
+Your personality:
+- Intelligent
+- Calm
+- Helpful
+- Natural
+- Professional
+- Slightly futuristic
+
+Always address the user as "Boss" when appropriate.
+
+Keep answers concise unless the user asks for detailed information.
+
+User message:
+${message}
+`;
+
+    const response = await fetch(url, {
+
+        method: "POST",
+
+        headers: {
+            "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+
+            contents: [
+                {
+                    parts: [
+                        {
+                            text: prompt
+                        }
+                    ]
+                }
+            ]
+
+        })
+
+    });
+
+    const data = await response.json();
+
+    console.log("Gemini response:", data);
+
+    if (!response.ok) {
+
+        throw new Error(
+            data?.error?.message ||
+            "Gemini API request failed."
+        );
+    }
+
+    const reply =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!reply) {
+
+        throw new Error(
+            "Gemini returned no response."
+        );
+    }
+
+    return reply;
+}
+
+// ==========================================
+// ADD MESSAGE
+// ==========================================
 
 function addMessage(sender, text, type) {
 
-    const messageDiv = document.createElement("div");
+    const messageDiv =
+        document.createElement("div");
 
-    messageDiv.className = "msg " + type;
+    messageDiv.className =
+        "msg " + type;
 
-    const label = document.createElement("span");
+    const label =
+        document.createElement("span");
 
     label.className = "label";
 
     label.textContent = sender;
 
-    messageDiv.appendChild(label);
-
-    const textNode = document.createElement("div");
+    const textNode =
+        document.createElement("div");
 
     textNode.textContent = text;
+
+    messageDiv.appendChild(label);
 
     messageDiv.appendChild(textNode);
 
     chat.appendChild(messageDiv);
 
-    chat.scrollTop = chat.scrollHeight;
+    chat.scrollTop =
+        chat.scrollHeight;
 }
 
-
-// ===============================
+// ==========================================
 // REMOVE THINKING MESSAGE
-// ===============================
+// ==========================================
 
-function removeLastAIMessage() {
+function removeThinking() {
 
-    const messages = chat.querySelectorAll(".msg");
+    const messages =
+        chat.querySelectorAll(".msg");
 
     if (messages.length === 0) return;
 
-    const last = messages[messages.length - 1];
+    const last =
+        messages[messages.length - 1];
 
     if (
         last.classList.contains("ai") &&
         last.textContent.includes("Thinking...")
     ) {
+
         last.remove();
     }
 }
 
-
-// ===============================
-// VOICE INPUT
-// ===============================
+// ==========================================
+// VOICE RECOGNITION
+// ==========================================
 
 const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
-
 if (SpeechRecognition) {
 
-    const recognition = new SpeechRecognition();
+    const recognition =
+        new SpeechRecognition();
 
     recognition.lang = "en-IN";
 
@@ -195,81 +242,90 @@ if (SpeechRecognition) {
 
     recognition.interimResults = false;
 
+    voiceBtn.addEventListener(
+        "click",
+        function () {
 
-    voiceBtn.addEventListener("click", function () {
+            try {
 
-        try {
+                recognition.start();
 
-            recognition.start();
+                voiceStatus.textContent =
+                    "LISTENING";
 
-            voiceStatus.textContent = "LISTENING";
+                voiceBtn.textContent =
+                    "🎙 LISTENING...";
 
-            voiceBtn.textContent = "🎙 LISTENING...";
+            } catch (error) {
 
+                console.log(error);
+            }
         }
+    );
 
-        catch (error) {
+    recognition.onresult =
+        function (event) {
 
-            console.log(error);
+            const transcript =
+                event.results[0][0].transcript;
 
-        }
+            input.value = transcript;
 
-    });
+            voiceStatus.textContent =
+                "PROCESSING";
 
+            voiceBtn.textContent =
+                "🎙 PROCESSING...";
 
-    recognition.onresult = function (event) {
+            sendMessage();
+        };
 
-        const transcript =
-            event.results[0][0].transcript;
+    recognition.onend =
+        function () {
 
-        input.value = transcript;
+            voiceStatus.textContent =
+                "READY";
 
-        voiceStatus.textContent = "READY";
+            voiceBtn.textContent =
+                "🎙 START VOICE";
+        };
 
-        voiceBtn.textContent = "🎙 START VOICE";
+    recognition.onerror =
+        function (event) {
 
-        // Automatically send
-        sendMessage();
+            console.error(
+                "Voice error:",
+                event.error
+            );
 
-    };
+            voiceStatus.textContent =
+                "ERROR";
 
+            voiceBtn.textContent =
+                "🎙 START VOICE";
+        };
 
-    recognition.onend = function () {
+} else {
 
-        voiceStatus.textContent = "READY";
+    voiceStatus.textContent =
+        "NOT SUPPORTED";
 
-        voiceBtn.textContent = "🎙 START VOICE";
-
-    };
-
-
-    recognition.onerror = function (event) {
-
-        console.error("Voice error:", event.error);
-
-        voiceStatus.textContent = "ERROR";
-
-        voiceBtn.textContent = "🎙 START VOICE";
-
-    };
-
-}
-else {
-
-    voiceStatus.textContent = "NOT SUPPORTED";
-
-    voiceBtn.textContent = "🎙 VOICE NOT SUPPORTED";
-
+    voiceBtn.textContent =
+        "🎙 VOICE NOT SUPPORTED";
 }
 
-
-// ===============================
-// J.A.R.V.I.S VOICE OUTPUT
-// ===============================
+// ==========================================
+// TEXT TO SPEECH
+// ==========================================
 
 function speak(text) {
 
     if (!("speechSynthesis" in window)) {
+
+        console.log(
+            "Speech synthesis not supported."
+        );
+
         return;
     }
 
@@ -288,3 +344,11 @@ function speak(text) {
 
     speechSynthesis.speak(speech);
 }
+
+// ==========================================
+// STARTUP MESSAGE
+// ==========================================
+
+console.log(
+    "J.A.R.V.I.S SYSTEM INITIALIZED."
+);
